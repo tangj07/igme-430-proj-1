@@ -1,0 +1,24 @@
+{
+  "name": "project-1",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node ./src/server.js",
+    "pretest": "eslint ./src/ --fix",
+    "test": "echo \"Tests complete\""
+  },
+  "author": "Jessie Tang",
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "eslint": "^8.56.0",
+    "eslint-config-airbnb": "^19.0.4",
+    "eslint-plugin-import": "^2.29.1"
+  },
+  "overrides": {
+    "eslint": {
+      "@humanwhocodes/config-array": "npm:@eslint/config-array",
+      "file-entry-cache": "^8.0.0"
+    }
+  }
+}

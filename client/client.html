@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Our simple HTTP server</title>
+  <link rel="stylesheet" type="text/css" href="style.css">
+  <script>
+  window.onload = () => {
+    document.querySelectorAll(".collapsible").forEach((t) => {
+      t.addEventListener("click", () => {
+        document.querySelectorAll(".content").forEach((e) => {
+          if (e !== t.nextElementSibling) {
+            e.style.display = "none";
+          }
+        });
+        const e = t.nextElementSibling;
+        e.style.display = e.style.display === "block" ? "none" : "block";
+      });
+    });
+    document.querySelectorAll("form").forEach((t) => {
+      t.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const n = new FormData(t);
+        const o = new URLSearchParams(n).toString();
+        const r = t.querySelector('input[name="method"]:checked');
+        const l = r ? r.value : t.dataset.method;
+        const s = t.dataset.endpoint + (o && l !== "POST" ? `?${o}` : "");
+        const resultBox = document.querySelector(".result"); 
+        fetch(s, {
+          method: l,
+          headers: l === "POST" ? { "Content-Type": "application/json" } : undefined,
+          body: l === "POST" ? JSON.stringify(Object.fromEntries(n)) : undefined,
+        })
+          .then((response) => {
+            const statusInfo = `Status: ${response.status}\nContent-Length: ${response.headers.get("Content-Length")}`;
+            return response.ok ? response.json().then((data) => {
+              resultBox.textContent = `${statusInfo}\nResponse: ${JSON.stringify(data, null, 2)}`;
+            }) : response.text().then((text) => {
+              throw new Error(text);
+            });
+          })
+          .catch((error) => {
+            resultBox.textContent = `Error: ${error.message}`;
+          });
+      });
+    });
+    document.querySelectorAll('form[data-endpoint="/addPokemon"]').forEach(form => {
+      form.addEventListener('submit', function (e) {
+        const name = form.querySelector('input[name="name"]').value;
+        const selectedTypes = Array.from(form.querySelectorAll('input[name="type"]:checked')).map(type => type.value);
+        const height = form.querySelector('input[name="height"]').value;
+        const weight = form.querySelector('input[name="weight"]').value;
+        const selectedWeaknesses = Array.from(form.querySelectorAll('input[name="weaknesses"]:checked')).map(weaknesses => weaknesses.value);
+        //no types are selected
+        if (selectedTypes.length === 0) {
+          e.preventDefault();
+          alert('You must select at least one type.');
+          return;
+        }
+        //more than 2 types are selected
+        if (selectedTypes.length > 2) {
+          e.preventDefault();
+          alert('You can only select up to 2 types.');
+          return;
+        }
+        //no weaknesses are selected
+        if (selectedWeaknesses.length === 0) {
+          e.preventDefault();
+          alert('You must select at least one weakness.');
+          return;
+        }
+        fetch('/addPokemon', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name,
+            type: selectedTypes, 
+            height,
+            weight,
+            weaknesses: selectedWeaknesses,
+          }),
+        })
+          .then(response => response.json())
+          .then(data => {
+            console.log('Success:', data);
+          })
+          .catch((error) => {
+            console.error('Error:', error);
+          });
+      });
+    });
+  };
+  </script>
+</head>
+<body class="vsc-initialized">
+  <div class="mainContent">
+    <h1>Pokedex API</h1>
+
+    <div class="flex-container">
+      <div class="endpoints">
+        <div class="endpoint">
+          <h2 class="collapsible">
+            Get Pokedex <span class="methods"><code>GET</code> <code>HEAD</code></span>
+          </h2>
+          <div class="content">
+            <div class="content-box">
+              <form data-method="GET" data-endpoint="/getPokedex">
+                <label><input type="radio" name="method" value="GET" checked=""> GET</label>
+                <label><input type="radio" name="method" value="HEAD"> HEAD</label><br>
+                <button type="submit">Get Pokedex</button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <div class="endpoint">
+          <h2 class="collapsible">
+            Get Pokemon <span class="methods"><code>GET</code> <code>HEAD</code></span>
+          </h2>
+          <div class="content">
+            <div class="content-box">
+              <form data-method="GET" data-endpoint="/getPokemon">
+                <label>Name: <input type="text" name="name"></label><br>
+                <label>ID: <input type="text" name="num"></label><br>
+                <label><input type="radio" name="method" value="GET" checked=""> GET</label>
+                <label><input type="radio" name="method" value="HEAD"> HEAD</label><br>
+                <button type="submit">Get Pokemon</button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <div class="endpoint">
+          <h2 class="collapsible">
+            Get Pokemon By Type <span class="methods"><code>GET</code> <code>HEAD</code></span>
+          </h2>
+          <div class="content">
+            <div class="content-box">
+              <form data-method="GET" data-endpoint="/getPokemonByType">
+                <label>
+                  <select id="typechoice" name="type" style="background-color:white">
+                    <option value="normal" selected>Normal</option>
+                    <option value="fire">Fire</option>
+                    <option value="water">Water</option>
+                    <option value="grass">Grass</option>
+                    <option value="electric">Electric</option>
+                    <option value="ice">Ice</option>
+                    <option value="fighting">Fighting</option>
+                    <option value="poison">Poison</option>
+                    <option value="ground">Ground</option>
+                    <option value="flying">Flying</option>
+                    <option value="psychic">Psychic</option>
+                    <option value="bug">Bug</option>
+                    <option value="rock">Rock</option>
+                    <option value="ghost">Ghost</option>
+                    <option value="dark">Dark</option>
+                    <option value="dragon">Dragon</option>
+                    <option value="steel">Steel</option>
+                    <option value="fairy">Fairy</option>
+                  </select><br>
+                </label>
+                <label><input type="radio" name="method" value="GET" checked=""> GET</label>
+                <label><input type="radio" name="method" value="HEAD"> HEAD</label><br>
+                <button type="submit">Get Pokemon</button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <div class="endpoint">
+          <h2 class="collapsible">
+            Get Next Evolutions <span class="methods"><code>GET</code> <code>HEAD</code></span>
+          </h2>
+          <div class="content">
+            <div class="content-box">
+              <form data-method="GET" data-endpoint="/getNextEvolutions">
+                <label>Name: <input type="text" name="name"></label><br>
+                <label>ID: <input type="text" name="num"></label><br>
+                <label><input type="radio" name="method" value="GET" checked=""> GET</label>
+                <label><input type="radio" name="method" value="HEAD"> HEAD</label><br>
+                <button type="submit">Get Evolutions</button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <div class="endpoint">
+          <h2 class="collapsible">
+            Add Pokemon <span class="methods"><code>POST</code></span>
+          </h2>
+          <div class="content">
+            <div class="content-box">
+              <form data-method="POST" data-endpoint="/addPokemon">
+                <label>Name: <input type="text" name="name" required></label><br>
+                <label>
+                  <label>Type (choose up to 2):</label><br>
+                  <label><input type="checkbox" name="type" value="normal"> Normal</label><br>
+                  <label><input type="checkbox" name="type" value="fire"> Fire</label><br>
+                  <label><input type="checkbox" name="type" value="water"> Water</label><br>
+                  <label><input type="checkbox" name="type" value="grass"> Grass</label><br>
+                  <label><input type="checkbox" name="type" value="electric"> Electric</label><br>
+                  <label><input type="checkbox" name="type" value="ice"> Ice</label><br>
+                  <label><input type="checkbox" name="type" value="fighting"> Fighting</label><br>
+                  <label><input type="checkbox" name="type" value="poison"> Poison</label><br>
+                  <label><input type="checkbox" name="type" value="ground"> Ground</label><br>
+                  <label><input type="checkbox" name="type" value="flying"> Flying</label><br>
+                  <label><input type="checkbox" name="type" value="psychic"> Psychic</label><br>
+                  <label><input type="checkbox" name="type" value="bug"> Bug</label><br>
+                  <label><input type="checkbox" name="type" value="rock"> Rock</label><br>
+                  <label><input type="checkbox" name="type" value="ghost"> Ghost</label><br>
+                  <label><input type="checkbox" name="type" value="dark"> Dark</label><br>
+                  <label><input type="checkbox" name="type" value="dragon"> Dragon</label><br>
+                  <label><input type="checkbox" name="type" value="steel"> Steel</label><br>
+                  <label><input type="checkbox" name="type" value="fairy"> Fairy</label><br>
+
+                  <label>Height (m): <input type="number" name="height" step="0.01" required></label><br>
+                  <label>Weight (kg): <input type="number" name="weight" step="0.1" required></label><br>
+
+                  <label>Weaknesses:</label><br>
+                  <label><input type="checkbox" name="weaknesses" value="normal"> Normal</label><br>
+                  <label><input type="checkbox" name="weaknesses" value="fire"> Fire</label><br>
+                  <label><input type="checkbox" name="weaknesses" value="water"> Water</label><br>
+                  <label><input type="checkbox" name="weaknesses" value="grass"> Grass</label><br>
+                  <label><input type="checkbox" name="weaknesses" value="electric"> Electric</label><br>
+                  <label><input type="checkbox" name="weaknesses" value="ice"> Ice</label><br>
+                  <label><input type="checkbox" name="weaknesses" value="fighting"> Fighting</label><br>
+                  <label><input type="checkbox" name="weaknesses" value="poison"> Poison</label><br>
+                  <label><input type="checkbox" name="weaknesses" value="ground"> Ground</label><br>
+                  <label><input type="checkbox" name="weaknesses" value="flying"> Flying</label><br>
+                  <label><input type="checkbox" name="weaknesses" value="psychic"> Psychic</label><br>
+                  <label><input type="checkbox" name="weaknesses" value="bug"> Bug</label><br>
+                  <label><input type="checkbox" name="weaknesses" value="rock"> Rock</label><br>
+                  <label><input type="checkbox" name="weaknesses" value="ghost"> Ghost</label><br>
+                  <label><input type="checkbox" name="weaknesses" value="dark"> Dark</label><br>
+                  <label><input type="checkbox" name="weaknesses" value="dragon"> Dragon</label><br>
+                  <label><input type="checkbox" name="weaknesses" value="steel"> Steel</label><br>
+                  <label><input type="checkbox" name="weaknesses" value="fairy"> Fairy</label><br>
+                </label>
+                <button type="submit">Add Pokemon</button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <div class="endpoint">
+          <h2 class="collapsible">
+            Rate Pokemon <span class="methods"><code>POST</code></span>
+          </h2>
+          <div class="content">
+            <div class="content-box">
+              <form data-method="POST" data-endpoint="/ratePokemon">
+                <label>Name: <input type="text" name="name"></label><br>
+                <label>ID: <input type="text" name="num"></label><br>
+                <label>Rating: <input type="number" name="rating" min="1" max="5"></label><br>
+                <button type="submit">Rate Pokemon</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="result-box">
+        <pre class="result"></pre>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>
+    Jessie Tang - 2024 - IGME 430 Project 1 
+  </footer>
+
+  <div class="volume-up-wrapper">
+    <div class="volume-up-indicator">100 %</div>
+  </div>
+
+</body>
+</html>
