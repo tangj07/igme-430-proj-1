@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const url = require('url'); 
+const url = require('url');
 
 const pokedexPath = path.join(__dirname, '..', 'data', 'pokedex.json');
 
@@ -31,8 +31,8 @@ const getPokedexMeta = (request, response) => {
 
 // return pokemon by name or ID
 const getPokemon = (request, response) => {
-  const parsedUrl = url.parse(request.url, true); 
-  const { name, num } = parsedUrl.query; 
+  const parsedUrl = url.parse(request.url, true);
+  const { name, num } = parsedUrl.query;
 
   fs.readFile(pokedexPath, 'utf8', (readErr, data) => {
     if (readErr) {
@@ -43,8 +43,8 @@ const getPokemon = (request, response) => {
       return;
     }
 
-    const pokedex = JSON.parse(data); 
-    let result = null; 
+    const pokedex = JSON.parse(data);
+    let result = null;
 
     if (name) {
       result = pokedex.find((pokemon) => pokemon.name.toLowerCase() === name.toLowerCase());
@@ -52,8 +52,8 @@ const getPokemon = (request, response) => {
 
     // no result found num is provided
     if (!result && num) {
-      const idNum = parseInt(num, 10); 
-      result = pokedex.find((pokemon) => pokemon.id === idNum); 
+      const idNum = parseInt(num, 10);
+      result = pokedex.find((pokemon) => pokemon.id === idNum);
     }
 
     if (result) {
@@ -71,7 +71,7 @@ const getPokemon = (request, response) => {
 // by type
 const getPokemonByType = (request, response) => {
   const parsedUrl = url.parse(request.url, true);
-  const { type } = parsedUrl.query; 
+  const { type } = parsedUrl.query;
 
   fs.readFile(pokedexPath, 'utf8', (readErr, data) => {
     if (readErr) {
@@ -82,7 +82,7 @@ const getPokemonByType = (request, response) => {
       return;
     }
 
-    const pokedex = JSON.parse(data); 
+    const pokedex = JSON.parse(data);
     const results = pokedex.filter((pokemon) => {
       const types = pokemon.type.map((t) => t.toLowerCase());
       return types.includes(type.toLowerCase());
@@ -100,7 +100,7 @@ const getPokemonByType = (request, response) => {
   });
 };
 
-//return the next evolutions 
+// return the next evolutions
 const getNextEvolutions = (request, response) => {
   const parsedUrl = url.parse(request.url, true);
   const { name, num } = parsedUrl.query;
@@ -121,7 +121,7 @@ const getNextEvolutions = (request, response) => {
       console.log(`Searching by name: ${name}, Found: ${result ? result.name : 'Not found'}`);
     }
 
-    //no result found num is provided
+    // no result found num is provided
     if (!result && num) {
       const idNum = parseInt(num, 10);
       result = pokedex.find((pokemon) => pokemon.id === idNum);
@@ -140,7 +140,7 @@ const getNextEvolutions = (request, response) => {
   });
 };
 
-//add a new Pokémon to the Pokedex
+// add a new Pokémon to the Pokedex
 const addPokemon = (request, response, bodyParams) => {
   fs.readFile(pokedexPath, 'utf8', (readErr, data) => {
     if (readErr) {
@@ -171,16 +171,30 @@ const addPokemon = (request, response, bodyParams) => {
 
     const newPokemon = {
       id: newId,
-      name: bodyParams.name || "Unnamed", 
-      type: Array.isArray(bodyParams.type) ? bodyParams.type : (typeof bodyParams.type === 'string' ? bodyParams.type.split(',').map(t => t.trim()) : []),
+      name: bodyParams.name || 'Unnamed',
+      type: (() => {
+        if (Array.isArray(bodyParams.type)) {
+          return bodyParams.type;
+        } if (typeof bodyParams.type === 'string') {
+          return bodyParams.type.split(',').map((t) => t.trim());
+        }
+        return [];
+      })(),
       height: bodyParams.height ? parseFloat(bodyParams.height) : null,
       weight: bodyParams.weight ? parseFloat(bodyParams.weight) : null,
-      weaknesses: Array.isArray(bodyParams.weaknesses) ? bodyParams.weaknesses : (typeof bodyParams.weaknesses === 'string' ? bodyParams.weaknesses.split(',').map(w => w.trim()) : []),
-      next_evolution: bodyParams.next_evolution ? bodyParams.next_evolution.split(',').map(e => e.trim()) : [],
+      weaknesses: (() => {
+        if (Array.isArray(bodyParams.weaknesses)) {
+          return bodyParams.weaknesses;
+        } if (typeof bodyParams.weaknesses === 'string') {
+          return bodyParams.weaknesses.split(',').map((w) => w.trim());
+        }
+        return [];
+      })(),
+      next_evolution: bodyParams.next_evolution ? bodyParams.next_evolution.split(',').map((e) => e.trim()) : [],
     };
 
-    const height = newPokemon.height;
-    const weight = newPokemon.weight;
+    const { height } = newPokemon;
+    const { weight } = newPokemon;
 
     if (height < 0 || weight < 0) {
       response.writeHead(400, { 'Content-Type': 'application/json' });
@@ -207,7 +221,7 @@ const addPokemon = (request, response, bodyParams) => {
   });
 };
 
-//handle not found 
+// handle not found
 const notFound = (request, response) => {
   response.writeHead(404, { 'Content-Type': 'application/json' });
   response.end(JSON.stringify({
@@ -215,7 +229,7 @@ const notFound = (request, response) => {
   }));
 };
 
-//export all functions
+// export all functions
 module.exports = {
   getPokedex,
   getPokedexMeta,

@@ -8,7 +8,7 @@ const port = process.env.PORT || process.env.NODE_PORT || 3000;
 
 const parseBody = (request, response, handler) => {
   const body = [];
-  
+
   request.on('error', (err) => {
     console.dir(err);
     response.statusCode = 400;
@@ -30,7 +30,6 @@ const parseBody = (request, response, handler) => {
     handler(request, response, bodyParams);
   });
 };
-
 
 const urlStruct = {
   GET: {
