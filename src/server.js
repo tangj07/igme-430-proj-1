@@ -34,12 +34,14 @@ const parseBody = (request, response, handler) => {
 const urlStruct = {
   GET: {
     '/': htmlHandler.getIndex,
+    '/doc': htmlHandler.getDoc,
     '/style.css': htmlHandler.getCSS,
     '/getPokedex': jsonHandler.getPokedex,
     '/getPokemon': jsonHandler.getPokemon,
     '/getPokemonByType': jsonHandler.getPokemonByType,
     '/getNextEvolutions': jsonHandler.getNextEvolutions,
     '/addPokemon': jsonHandler.addPokemon,
+    '/ratePokemon': jsonHandler.ratePokemon,
     notFound: jsonHandler.notFound,
   },
   HEAD: {
@@ -52,6 +54,8 @@ const urlStruct = {
 const handlePost = (request, response, parsedUrl) => {
   if (parsedUrl.pathname === '/addPokemon') {
     parseBody(request, response, jsonHandler.addPokemon);
+  } else if (parsedUrl.pathname === '/ratePokemon') {
+    parseBody(request, response, jsonHandler.ratePokemon);
   }
 };
 

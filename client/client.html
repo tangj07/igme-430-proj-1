@@ -90,6 +90,31 @@
           });
       });
     });
+    document.getElementById('ratePokemonForm').addEventListener('submit', (event) => {
+      const form = event.target;
+      const formData = new FormData(form);
+      const data = {
+        name: formData.get('name'),
+        num: formData.get('num'),
+        rating: formData.get('rating'),
+      };
+      fetch('/ratePokemon', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          console.log('Success:', data);
+          alert(`Rating submitted: ${data.message}`);
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+          alert('An error occurred while rating the Pokémon.');
+        });
+    });
   };
   </script>
 </head>
@@ -252,7 +277,7 @@
               <form data-method="POST" data-endpoint="/ratePokemon">
                 <label>Name: <input type="text" name="name"></label><br>
                 <label>ID: <input type="text" name="num"></label><br>
-                <label>Rating: <input type="number" name="rating" min="1" max="5"></label><br>
+                <label>Rating (out of 10): <input type="number" name="rating" min="1" max="10"></label><br>
                 <button type="submit">Rate Pokemon</button>
               </form>
             </div>
@@ -269,6 +294,7 @@
 
   <footer>
     Jessie Tang - 2024 - IGME 430 Project 1 
+    <a href="/doc">Documentation</a>
   </footer>
 
   <div class="volume-up-wrapper">

@@ -1,0 +1,231 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Movie API Docs</title>
+  <link rel="stylesheet" type="text/css" href="style.css">
+  <script>
+    window.onload = () => {
+      document.querySelectorAll(".collapsible").forEach((t) => {
+        t.addEventListener("click", () => {
+          document.querySelectorAll(".content").forEach((e) => {
+            if (e !== t.nextElementSibling) {
+              e.style.display = "none";
+            }
+          });
+          const e = t.nextElementSibling;
+          e.style.display = e.style.display === "block" ? "none" : "block";
+        });
+      });
+      document.querySelectorAll("form").forEach((t) => {
+        t.addEventListener("submit", (e) => {
+          e.preventDefault();
+          const n = new FormData(t);
+          const o = new URLSearchParams(n).toString();
+          const r = t.querySelector('input[name="method"]:checked');
+          const l = r ? r.value : t.dataset.method;
+          const s = t.dataset.endpoint + (o && l !== "POST" ? `?${o}` : "");
+          const resultBox = document.querySelector(".result"); 
+          fetch(s, {
+            method: l,
+            headers: l === "POST" ? { "Content-Type": "application/json" } : undefined,
+            body: l === "POST" ? JSON.stringify(Object.fromEntries(n)) : undefined,
+          })
+            .then((response) => {
+              const statusInfo = `Status: ${response.status}\nContent-Length: ${response.headers.get("Content-Length")}`;
+              return response.ok ? response.json().then((data) => {
+                resultBox.textContent = `${statusInfo}\nResponse: ${JSON.stringify(data, null, 2)}`;
+              }) : response.text().then((text) => {
+                throw new Error(text);
+              });
+            })
+            .catch((error) => {
+              resultBox.textContent = `Error: ${error.message}`;
+            });
+        });
+      });
+    }
+</script>
+</head>
+
+<body>
+  <div class="mainContent">
+  <h1>Pokedex API Documentation</h1>
+
+  <div class="endpoint">
+    <h2 class="collapsible">
+      /getPokedex <span class="methods"><code>GET</code> <code>HEAD</code></span>
+    </h2>
+    <div class="content">
+      <div class="content-box">
+        <h3>Query Params</h3>
+        <p class="param">No Supported Params</p>
+        <h3>Returns</h3>
+        <p class="param">A JSON array of Pokemon object. <br>Format:
+          <code>[{ id: number, num: string, name: string, img: string, types: [string], height: string, weight: string, weaknesses: [string], next_evolution?: [num: string, name: string], rating?: number }]</code>
+        </p>
+        <h3>Examples</h3>
+        <section class="example">
+          <p>Request: <code>/getPokedex</code></p>
+          <p>Result:
+            <code>[{ id: 1, num: '001', name: 'Bulbasaur', img: 'http://www.serebii.net/pokemongo/pokemon/001.png', types: ['Grass', 'Poison'], height: '0.71 m', weight: '6.9 kg', weaknesses: ['Fire', 'Ice', 'Flying', 'Psychic'], next_evolution: [{num: '002', name: 'Ivysaur'}, {num: '003', name: 'Venusaur'}] }, ...]</code></p>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <div class="endpoint">
+    <h2 class="collapsible">
+      /getPokemon <span class="methods"><code>GET</code> <code>HEAD</code></span>
+    </h2>
+    <div class="content">
+      <div class="content-box">
+        <h3>Query Params</h3>
+        <p class="param"><code>name</code> - The name of the Pokemon.</p>
+        <p class="param"><code>id</code> - The id of the Pokemon.</p>
+        <h3>Returns</h3>
+        <p class="param">A JSON Pokemon object. <br>Format:
+          <code>{ id: number, num: string, name: string, img: string, types: [string], height: string, weight: string, weaknesses: [string], next_evolution?: [{num: string, name: string}], rating?: number }</code>
+        </p>
+        <h3>Examples</h3>
+        <section class="example">
+          <p>Request: <code>/getPokemon?num=1</code></p>
+          <p>Result: <code>{ id: 1, num: '001', name: 'Bulbasaur', img: 'http://www.serebii.net/pokemongo/pokemon/001.png', types: ['Grass', 'Poison'], height: '0.71 m', weight: '6.9 kg', weaknesses: ['Fire', 'Ice', 'Flying', 'Psychic'], next_evolution: [{num: '002', name: 'Ivysaur'}, {num: '003', name: 'Venusaur'}] }</code></p>
+        </section>
+        <section class="example">
+          <p>Request: <code>/getPokemon</code></p>
+          <p>Result: <code>400 Error</code></p>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <div class="endpoint">
+    <h2 class="collapsible">
+      /getPokemonByType <span class="methods"><code>GET</code> <code>HEAD</code></span>
+    </h2>
+    <div class="content">
+      <div class="content-box">
+        <h3>Query Params</h3>
+        <p class="param"><code>type</code> Pokemon type to filter by.</p>
+        <h3>Returns</h3>
+        <p class="param">A JSON array of Pokemon object. Format: <code>[{ id: number, num: string, name: string, img: string, types: [string], height: string, weight: string, weaknesses: [string], next_evolution?: [num: string, name: string], rating?: number }]</code></p>
+        <h3>Examples</h3>
+        <section class="example">
+          <p>Request: <code>/getPokemonByType?type=Grass</code></p>
+          <p>Result: <code>[{ id: 1, num: '001', name: 'Bulbasaur', img: 'http://www.serebii.net/pokemongo/pokemon/001.png', types: ['Grass', 'Poison'], height: '0.71 m', weight: '6.9 kg', weaknesses: ['Fire', 'Ice', 'Flying', 'Psychic'], next_evolution: [{num: '002', name: 'Ivysaur'}, {num: '003', name: 'Venusaur'}] }, ...]</code></p>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <div class="endpoint">
+    <h2 class="collapsible">
+      /getNextEvolutions <span class="methods"><code>GET</code> <code>HEAD</code></span>
+    </h2>
+    <div class="content">
+      <div class="content-box">
+        <h3>Query Params</h3>
+        <p class="param"><code>name</code> - The name of the Pokemon.</p>
+        <p class="param"><code>id</code> - The id of the Pokemon.</p>
+        <h3>Returns</h3>
+        <p class="param">A JSON array of Pokemon objects.<br>Format:
+          <code>[{num: string, name: string}]</code>
+        </p>
+        <h3>Examples</h3>
+        <section class="example">
+          <p>Request: <code>getNextEvolutions?num=1</code></p>
+          <p>Result:
+            <code>[{num: '002', name: 'Ivysaur'}, {num: '003', name: 'Venusaur'}]</code>
+          </p>
+        </section>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="endpoint">
+    <h2 class="collapsible">
+      /addPokemon <span class="methods"><code>POST</code></span>
+    </h2>
+    <div class="content">
+      <div class="content-box">
+        <h3>Supported Body Formats</h3>
+        <p class="param"><code>application/json</code>
+          <code>application/x-www-form-urlencoded</code>
+        </p>
+        <h3>Body Params</h3>
+        <p class="param"><code>name</code> - The name of the Pokemon.</p>
+        <p class="param"><code>type</code> - The types of the Pokemon.</p>
+        <p class="param"><code>height</code> - The height of the Pokemon.</p>
+        <p class="param"><code>weight</code> - The weight of the Pokemon.</p>
+        <p class="param"><code>weaknesses</code> - The weaknesses of the Pokemon.</p>
+        <h3>Returns</h3>
+        <p class="param">A JSON Pokemon object representing the new Pokemon. <br>Format:
+          <code>{ id: number, name: string, types: [string], height: string, weight: string, weaknesses: [string] }</code>
+        </p>
+        <h3>Examples</h3>
+        <section class="example">
+          <p>Request: <code>/addPokemon</code></p>
+          <p>Body: <code>{ id: 152, name: 'test', types: 'normal', height: '0.01', weight: '0.1', weaknesses: 'water' }</code></p>
+          <p>Result: <code>{ id: 152, name: 'test', types: ['normal'], height: '0.01', weight: '0.1', weaknesses: ['water'] }</code></p>
+        </section>
+        <section class="example">
+          <p>Request: <code>/api/addFilm</code></p>
+          <p>Body: <code>{ types: 'normal', height: '0.01', weight: '0.1', weaknesses: 'water' }</code></p>
+          <p>Result: <code>400 Error (Missing name)</code></p>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <div class="endpoint">
+    <h2 class="collapsible">
+      /ratePokemon <span class="methods"><code>POST</code></span>
+    </h2>
+    <div class="content">
+      <div class="content-box">
+        <h3>Supported Body Formats</h3>
+        <p class="param"><code>application/json</code>
+          <code>application/x-www-form-urlencoded</code>
+        </p>
+        <h3>Body Params</h3>
+        <p class="param"><code>name</code> - The name of the Pokemon.</p>
+        <p class="param"><code>type</code> - The types of the Pokemon.</p>
+        <p class="param"><code>rating</code> Type: <code>number</code>
+          - The rating of the Pokemon.</p>
+        <h3>Returns</h3>
+        <p class="param">A JSON Pokemon object representing updated Pokemon, or a 404 if no Pokemon with that title exists.
+          <br>Format:
+          <code>{ id: number, num: string, name: string, img: string, types: [string], height: string, weight: string, weaknesses: [string], next_evolution?: [{num: string, name: string}], rating: number }</code>
+        </p>
+        <h3>Examples</h3>
+        <section class="example">
+          <p>Request: <code>/ratePokemon</code></p>
+          <p>Body: <code>{ id: '1', rating: 1 }</code></p>
+          <p>Result: <code>{ id: 1, num: '001', name: 'Bulbasaur', img: 'http://www.serebii.net/pokemongo/pokemon/001.png', types: ['Grass', 'Poison'], height: '0.71 m', weight: '6.9 kg', weaknesses: ['Fire', 'Ice', 'Flying', 'Psychic'], next_evolution: [{num: '002', name: 'Ivysaur'}, {num: '003', name: 'Venusaur'}], rating: 1 }</code></p>
+        </section>
+        <section class="example">
+          <p>Request: <code>/ratePokemon<</code></p>
+          <p>Body: <code>{ id: '1'}</code></p>
+          <p>Result: <code>400 Error (Missing Rating)</code></p>
+        </section>
+        <section class="example">
+          <p>Request: <code>/ratePokemon</code></p>
+          <p>Body: <code>{ id: '-1', rating: 1}</code></p>
+          <p>Result: <code>404 Error (Film Doesn't Exist)</code></p>
+        </section>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+    Jessie Tang - 2024 - IGME 430 Project 1 
+  <a href="/">Homepage</a>
+  </footer>
+
+</body>
+
+</html>
